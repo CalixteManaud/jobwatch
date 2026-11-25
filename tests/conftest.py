@@ -60,6 +60,7 @@ def fake_time() -> FakeTime:
 _ENV_VARS = (
     "FT_CLIENT_ID",
     "FT_CLIENT_SECRET",
+    "FT_AUTH_URL",
     "DISCORD_WEBHOOK_URL",
     "PUSHGATEWAY_URL",
     "STATE_PATH",

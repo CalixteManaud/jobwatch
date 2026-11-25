@@ -25,7 +25,9 @@ from jobwatch.models import Offer
 from jobwatch.ratelimit import RateLimiter
 from jobwatch.retry import RETRYABLE_STATUS, RetryableResponseError, build_retrying
 
-AUTH_URL = "https://entreprise.francetravail.fr/connexion/oauth2/access_token"
+# Endpoint du royaume partenaire recommandé par France Travail (11/2026) ; surchargeable
+# par FT_AUTH_URL. Ancien endpoint : https://entreprise.francetravail.fr/connexion/oauth2/access_token
+AUTH_URL = "https://authentification-partenaire.francetravail.io/connexion/oauth2/access_token"
 AUTH_REALM = "/partenaire"
 SEARCH_URL = "https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search"
 SCOPE = "api_offresdemploiv2 o2dsoffre"
@@ -147,9 +149,11 @@ class TokenProvider:
         *,
         limiter: RateLimiter,
         retrying: Retrying,
+        auth_url: str = AUTH_URL,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self._http = http
+        self._auth_url = auth_url
         self._client_id = client_id
         self._client_secret = client_secret
         self._limiter = limiter
@@ -171,7 +175,7 @@ class TokenProvider:
         self._limiter.acquire()
         self.requests += 1
         response = self._http.post(
-            AUTH_URL,
+            self._auth_url,
             params={"realm": AUTH_REALM},
             data={
                 "grant_type": "client_credentials",
@@ -213,6 +217,7 @@ class FranceTravailClient:
         client_secret: str,
         *,
         http: httpx.Client | None = None,
+        auth_url: str = AUTH_URL,
         page_size: int = PAGE_SIZE,
         rate_per_second: float = DEFAULT_RATE_PER_SECOND,
         max_attempts: int = 5,
@@ -237,6 +242,7 @@ class FranceTravailClient:
             client_secret,
             limiter=self._limiter,
             retrying=self._retrying,
+            auth_url=auth_url,
             clock=clock if clock is not None else time.monotonic,
         )
         self._search_requests = 0

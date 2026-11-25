@@ -343,3 +343,13 @@ def test_injected_http_client_is_not_closed(fake_time: FakeTime) -> None:
         pass
     assert http.is_closed is False
     http.close()
+
+
+def test_custom_auth_url(respx_mock: respx.MockRouter, fake_time: FakeTime) -> None:
+    custom = respx_mock.post("https://auth.example.test/token").mock(
+        return_value=httpx.Response(200, json=load_json("ft_token.json"))
+    )
+    with make_client(fake_time, auth_url="https://auth.example.test/token") as client:
+        client.authenticate()
+    assert custom.call_count == 1
+    assert custom.calls[0].request.url.params["realm"] == "/partenaire"

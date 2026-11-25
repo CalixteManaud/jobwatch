@@ -96,9 +96,17 @@ flowchart LR
 ### 1. Identifiants France Travail
 
 1. Créer un compte sur [francetravail.io](https://francetravail.io) (espace développeur).
-2. **Mes applications → Créer une application** (nom libre, ex. « jobwatch »).
-3. Dans l'application, **s'abonner à l'API « Offres d'emploi v2 »**.
-4. Récupérer l'**identifiant client** et la **clé secrète** de l'application.
+2. **Mes applications → Créer une application** (nom libre, ex. « jobwatch »), puis noter
+   l'**identifiant client** et la **clé secrète**. La clé ne s'affiche qu'à la création ; en cas
+   de perte, utiliser « Renouveler ». Les identifiants expirent au bout d'un an.
+3. **Demander l'accès à l'API « Offres d'emploi v2 »**. Elle n'est plus en libre-service : elle
+   est désormais **accessible sous conditions**. La demande se fait via le formulaire
+   « Nous contacter » de francetravail.io, en précisant le porteur, la finalité, l'usage des
+   offres, le modèle économique, la volumétrie, la conservation et l'usage éventuel d'IA.
+
+Les tokens sont demandés au royaume partenaire sur
+`https://authentification-partenaire.francetravail.io`, l'endpoint recommandé par France
+Travail. Il reste surchargeable par `FT_AUTH_URL`.
 
 ### 2. Webhook Discord
 
@@ -154,6 +162,7 @@ Cibles `make` : `install`, `lint`, `format`, `test`, `run` (`SINCE=7d ARGS="--dr
 `kind-delete`. `make help` les liste.
 
 Variables d'environnement : `FT_CLIENT_ID`, `FT_CLIENT_SECRET`, `DISCORD_WEBHOOK_URL` (secrets),
+`FT_AUTH_URL` (endpoint OAuth2, défaut : royaume partenaire `authentification-partenaire`),
 `STATE_PATH` (défaut `./state/jobwatch.db`), `OUT_DIR` (`./out`), `CONFIG_PATH` (`./config.yaml`),
 `PUSHGATEWAY_URL`, `LOG_LEVEL`, `LOG_FORMAT` (`json` ou `console`).
 
@@ -285,6 +294,9 @@ Hors kind : `kubectl create secret generic jobwatch-secrets --from-env-file=.env
 
 ## Limites
 
+- L'accès à l'API Offres d'emploi est **soumis à validation** par France Travail, et les
+  identifiants d'application **expirent au bout d'un an** : il faut les renouveler sur
+  francetravail.io, puis mettre à jour `.env` et les secrets GitHub.
 - L'API ne pagine pas au-delà de **1150 résultats par requête**. Si une recherche dépasse ce
   plafond, un warning `search.truncated` est loggé. Avec une fenêtre de 26 h, ce n'est pas un
   problème en pratique.

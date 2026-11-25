@@ -284,3 +284,18 @@ def test_sample_writes_anonymized_fixture(
     assert "2 offre(s) anonymisée(s)" in result.stdout
     assert "Offres valides : 2/2" in result.stdout
     assert "romeCode" in result.stdout  # champ présent mais non modélisé
+
+
+def test_auth_url_from_environment(
+    respx_mock: respx.MockRouter, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    setup_env(monkeypatch, tmp_path, FT_AUTH_URL="https://auth.example.test/token")
+    custom = respx_mock.post("https://auth.example.test/token").mock(
+        return_value=httpx.Response(200, json=load_json("ft_token.json"))
+    )
+    respx_mock.get(SEARCH_URL).mock(return_value=httpx.Response(204))
+
+    result = runner.invoke(app, ["run", "--dry-run"])
+
+    assert result.exit_code == 0, result.output
+    assert custom.call_count == 1

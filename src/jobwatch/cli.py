@@ -78,6 +78,11 @@ def _bootstrap() -> Settings:
     return settings
 
 
+def _ft_client(settings: Settings) -> FranceTravailClient:
+    client_id, client_secret = settings.ft_credentials()
+    return FranceTravailClient(client_id, client_secret, auth_url=settings.ft_auth_url)
+
+
 @contextmanager
 def _handle_errors(command: str) -> Iterator[None]:
     try:
@@ -180,11 +185,11 @@ def run(
     log.info("run.start", version=__version__, since=since, dry_run=dry_run, notify=notify)
     try:
         app_config = load_config(config or settings.config_path)
-        client_id, client_secret = settings.ft_credentials()
+        settings.ft_credentials()  # échoue tôt si les identifiants manquent
         notifier = DiscordNotifier(settings.webhook_url()) if notify and not dry_run else None
         try:
             with (
-                FranceTravailClient(client_id, client_secret) as client,
+                _ft_client(settings) as client,
                 OfferStore.open(settings.state_path, readonly=dry_run) as store,
             ):
                 try:
@@ -231,12 +236,11 @@ def search(
     settings = _bootstrap()
     with _handle_errors("search"):
         app_config = load_config(config or settings.config_path)
-        client_id, client_secret = settings.ft_credentials()
         now = datetime.now(UTC)
         search_config = app_config.search
         zone = search_config.zone(dept) if dept else "France"
         query = SearchQuery(keywords, dept, now - window, now, search_config.contract_type)
-        with FranceTravailClient(client_id, client_secret) as client:
+        with _ft_client(settings) as client:
             client.authenticate()
             result = client.search(query)
     scorer = Scorer(app_config.scoring, contract_type=search_config.contract_type)
@@ -263,9 +267,8 @@ def sample(
     window = parse_window(since)
     settings = _bootstrap()
     with _handle_errors("sample"):
-        client_id, client_secret = settings.ft_credentials()
         now = datetime.now(UTC)
-        with FranceTravailClient(client_id, client_secret) as client:
+        with _ft_client(settings) as client:
             raw = client.fetch_raw(SearchQuery(keywords, dept, now - window, now), count)
 
     offers = anonymize_offers(raw)

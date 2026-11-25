@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from jobwatch.errors import ConfigError
 from jobwatch.settings import Settings
@@ -57,3 +58,19 @@ def test_webhook_url(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_log_level_is_case_insensitive(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("LOG_LEVEL", "debug")
     assert Settings().log_level == "DEBUG"
+
+
+def test_auth_url_defaults_to_partner_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
+    assert Settings().ft_auth_url == (
+        "https://authentification-partenaire.francetravail.io/connexion/oauth2/access_token"
+    )
+    monkeypatch.setenv("FT_AUTH_URL", "")
+    assert Settings().ft_auth_url.startswith("https://authentification-partenaire.")
+
+
+def test_auth_url_override_must_be_https(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FT_AUTH_URL", "https://auth.example.test/token")
+    assert Settings().ft_auth_url == "https://auth.example.test/token"
+    monkeypatch.setenv("FT_AUTH_URL", "http://auth.example.test/token")
+    with pytest.raises(ValidationError, match="https"):
+        Settings()

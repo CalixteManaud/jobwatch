@@ -10,6 +10,7 @@ from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from jobwatch.errors import ConfigError
+from jobwatch.francetravail import AUTH_URL
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR"]
 LogFormat = Literal["json", "console"]
@@ -26,6 +27,8 @@ class Settings(BaseSettings):
     ft_client_secret: SecretStr | None = None
     discord_webhook_url: SecretStr | None = None
     pushgateway_url: str | None = None
+    # endpoint OAuth2 du royaume partenaire (non secret), surchargeable sans toucher au code
+    ft_auth_url: str = AUTH_URL
 
     state_path: Path = Path("state/jobwatch.db")
     out_dir: Path = Path("out")
@@ -42,6 +45,20 @@ class Settings(BaseSettings):
         """`FOO=` dans un .env ou un Secret vaut « non défini »."""
         if isinstance(value, str) and not value.strip():
             return None
+        return value
+
+    @field_validator("ft_auth_url", mode="before")
+    @classmethod
+    def _auth_url_default(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return AUTH_URL
+        return value
+
+    @field_validator("ft_auth_url")
+    @classmethod
+    def _auth_url_https(cls, value: str) -> str:
+        if not value.startswith("https://"):
+            raise ValueError("FT_AUTH_URL doit être une URL https://")
         return value
 
     @field_validator("log_level", mode="before")
