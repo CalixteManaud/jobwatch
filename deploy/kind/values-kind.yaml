@@ -1,0 +1,11 @@
+# Surcharge pour la démo kind (`make kind-deploy`) : image chargée localement avec `kind load`.
+image:
+  pullPolicy: Never
+
+# StorageClass « standard » (local-path) fournie par kind
+persistence:
+  enabled: true
+  keep: false
+
+env:
+  LOG_LEVEL: INFO

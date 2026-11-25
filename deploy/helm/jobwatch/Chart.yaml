@@ -1,0 +1,17 @@
+apiVersion: v2
+name: jobwatch
+description: CronJob de veille des offres France Travail (digest Discord classé + CSV de suivi)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">=1.27.0-0" # spec.timeZone des CronJob
+home: https://github.com/CalixteManaud/jobwatch
+sources:
+  - https://github.com/CalixteManaud/jobwatch
+keywords:
+  - cronjob
+  - france-travail
+  - discord
+maintainers:
+  - name: CalixteManaud
+    url: https://github.com/CalixteManaud

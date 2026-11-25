@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Valeurs du chart jobwatch",
+  "type": "object",
+  "required": ["image", "schedule", "existingSecret", "persistence", "args"],
+  "properties": {
+    "image": {
+      "type": "object",
+      "required": ["repository"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "tag": { "type": "string" },
+        "pullPolicy": { "enum": ["Always", "IfNotPresent", "Never"] }
+      }
+    },
+    "schedule": { "type": "string", "minLength": 9 },
+    "timeZone": { "type": "string" },
+    "suspend": { "type": "boolean" },
+    "startingDeadlineSeconds": { "type": "integer", "minimum": 10 },
+    "successfulJobsHistoryLimit": { "type": "integer", "minimum": 0 },
+    "failedJobsHistoryLimit": { "type": "integer", "minimum": 0 },
+    "backoffLimit": { "type": "integer", "minimum": 0 },
+    "activeDeadlineSeconds": { "type": "integer", "minimum": 60 },
+    "ttlSecondsAfterFinished": { "type": "integer", "minimum": 0 },
+    "args": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "existingSecret": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Secret contenant FT_CLIENT_ID, FT_CLIENT_SECRET et DISCORD_WEBHOOK_URL"
+    },
+    "env": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "not": {
+        "anyOf": [
+          { "required": ["FT_CLIENT_ID"] },
+          { "required": ["FT_CLIENT_SECRET"] },
+          { "required": ["DISCORD_WEBHOOK_URL"] }
+        ]
+      },
+      "description": "Variables non sensibles uniquement : les secrets passent par existingSecret"
+    },
+    "config": { "type": "object" },
+    "persistence": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "existingClaim": { "type": "string" },
+        "storageClass": { "type": "string" },
+        "accessModes": { "type": "array", "items": { "type": "string" } },
+        "size": { "type": "string", "pattern": "^[0-9]+(Ki|Mi|Gi|Ti)$" },
+        "keep": { "type": "boolean" }
+      }
+    },
+    "resources": { "type": "object" },
+    "podSecurityContext": { "type": "object" },
+    "securityContext": { "type": "object" },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": { "type": "boolean" },
+        "name": { "type": "string" },
+        "annotations": { "type": "object" }
+      }
+    }
+  }
+}

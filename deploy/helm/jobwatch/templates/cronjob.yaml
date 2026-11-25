@@ -1,0 +1,114 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "jobwatch.fullname" . }}
+  labels:
+    {{- include "jobwatch.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  {{- with .Values.timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  # un seul run à la fois : deux runs concurrents enverraient deux fois les mêmes offres
+  concurrencyPolicy: Forbid
+  suspend: {{ .Values.suspend }}
+  startingDeadlineSeconds: {{ .Values.startingDeadlineSeconds }}
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "jobwatch.labels" . | nindent 8 }}
+    spec:
+      backoffLimit: {{ .Values.backoffLimit }}
+      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+      ttlSecondsAfterFinished: {{ .Values.ttlSecondsAfterFinished }}
+      template:
+        metadata:
+          labels:
+            {{- include "jobwatch.selectorLabels" . | nindent 12 }}
+            {{- with .Values.podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- if or .Values.config .Values.podAnnotations }}
+          annotations:
+            {{- if .Values.config }}
+            checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+            {{- end }}
+            {{- with .Values.podAnnotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+        spec:
+          restartPolicy: Never
+          serviceAccountName: {{ include "jobwatch.serviceAccountName" . }}
+          automountServiceAccountToken: false
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          containers:
+            - name: jobwatch
+              image: {{ include "jobwatch.image" . | quote }}
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              args:
+                {{- toYaml .Values.args | nindent 16 }}
+              envFrom:
+                - secretRef:
+                    name: {{ required "existingSecret est requis (Secret avec FT_CLIENT_ID, FT_CLIENT_SECRET, DISCORD_WEBHOOK_URL)" .Values.existingSecret }}
+              env:
+                - name: STATE_PATH
+                  value: /data/state/jobwatch.db
+                - name: OUT_DIR
+                  value: /data/out
+                - name: CONFIG_PATH
+                  value: {{ ternary "/etc/jobwatch/config.yaml" "/app/config.yaml" (not (empty .Values.config)) }}
+                {{- range $name, $value := .Values.env }}
+                - name: {{ $name }}
+                  value: {{ $value | quote }}
+                {{- end }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+                - name: tmp
+                  mountPath: /tmp
+                {{- if .Values.config }}
+                - name: config
+                  mountPath: /etc/jobwatch
+                  readOnly: true
+                {{- end }}
+          volumes:
+            - name: data
+              {{- if .Values.persistence.enabled }}
+              persistentVolumeClaim:
+                claimName: {{ include "jobwatch.claimName" . }}
+              {{- else }}
+              emptyDir:
+                sizeLimit: 100Mi
+              {{- end }}
+            - name: tmp
+              emptyDir:
+                sizeLimit: 50Mi
+            {{- if .Values.config }}
+            - name: config
+              configMap:
+                name: {{ include "jobwatch.fullname" . }}-config
+            {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

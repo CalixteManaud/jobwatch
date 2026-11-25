@@ -1,0 +1,84 @@
+# Valeurs par défaut du chart jobwatch. Aucun secret ici : ils viennent d'un Secret existant.
+
+image:
+  repository: ghcr.io/calixtemanaud/jobwatch
+  # vide = appVersion du chart
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# --- planification ------------------------------------------------------------
+schedule: "30 6 * * *"
+timeZone: Europe/Paris
+suspend: false
+startingDeadlineSeconds: 3600
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 3
+backoffLimit: 1
+activeDeadlineSeconds: 900
+ttlSecondsAfterFinished: 86400
+
+# arguments passés à l'ENTRYPOINT `jobwatch`
+args: ["run", "--since", "26h"]
+
+# --- secrets ------------------------------------------------------------------
+# Secret existant (créé hors chart) injecté via envFrom, avec les clés :
+#   FT_CLIENT_ID, FT_CLIENT_SECRET, DISCORD_WEBHOOK_URL
+# ex. : kubectl create secret generic jobwatch-secrets --from-env-file=.env
+existingSecret: jobwatch-secrets
+
+# variables d'environnement non sensibles (ex. PUSHGATEWAY_URL, LOG_LEVEL)
+env: {}
+
+# --- configuration fonctionnelle ----------------------------------------------
+# Vide : config.yaml embarqué dans l'image. Sinon, contenu complet de config.yaml
+# (search / scoring / notify), monté depuis une ConfigMap.
+config: {}
+
+# --- état SQLite --------------------------------------------------------------
+persistence:
+  # sans volume persistant, chaque run repartirait de zéro et renverrait tout
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  accessModes: ["ReadWriteOnce"]
+  size: 100Mi
+  # conserve le PVC (donc l'historique des offres notifiées) au `helm uninstall`
+  keep: true
+
+# --- ressources & sécurité ----------------------------------------------------
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+podLabels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

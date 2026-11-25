@@ -1,0 +1,13 @@
+jobwatch est planifié : « {{ .Values.schedule }} » ({{ .Values.timeZone | default "UTC" }}).
+
+1. Le Secret « {{ .Values.existingSecret }} » doit exister dans le namespace {{ .Release.Namespace }} :
+     kubectl -n {{ .Release.Namespace }} create secret generic {{ .Values.existingSecret }} --from-env-file=.env
+
+2. Lancer un run tout de suite :
+     kubectl -n {{ .Release.Namespace }} create job jobwatch-manual-$(date +%s) --from=cronjob/{{ include "jobwatch.fullname" . }}
+     kubectl -n {{ .Release.Namespace }} logs -f -l app.kubernetes.io/instance={{ .Release.Name }}
+{{- if not .Values.persistence.enabled }}
+
+ATTENTION : persistence.enabled=false. L'état SQLite est perdu à chaque run :
+toutes les offres de la fenêtre seront renvoyées sur Discord à chaque exécution.
+{{- end }}
