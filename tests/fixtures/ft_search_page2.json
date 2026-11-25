@@ -1,0 +1,42 @@
+{
+  "resultats": [
+    {
+      "id": "200CCCC",
+      "intitule": "Alternance - Administrateur système Linux",
+      "description": "Contrat en alternance de 24 mois, rythme 3 semaines / 1 semaine.",
+      "dateCreation": "2026-11-23T16:30:00.000Z",
+      "lieuTravail": {
+        "libelle": "75 - Paris 11e Arrondissement"
+      },
+      "entreprise": {
+        "nom": "HEBERGEUR SAS"
+      },
+      "typeContrat": "CDI",
+      "experienceExige": "D",
+      "experienceLibelle": "Débutant accepté",
+      "alternance": true,
+      "origineOffre": {
+        "origine": "1",
+        "urlOrigine": "https://candidat.francetravail.fr/offres/recherche/detail/200CCCC"
+      }
+    },
+    {
+      "id": "200DDDD",
+      "intitule": "Ingénieur de production (H/F)",
+      "description": "Exploitation d'un parc de serveurs Linux, automatisation avec Ansible, astreintes.",
+      "dateCreation": "2026-11-23T10:00:00.000Z",
+      "lieuTravail": {
+        "libelle": "75 - Paris 9e Arrondissement"
+      },
+      "entreprise": null,
+      "typeContrat": "CDI",
+      "experienceExige": "S",
+      "experienceLibelle": "Expérience souhaitée de 2 An(s)",
+      "salaire": null,
+      "alternance": false,
+      "origineOffre": {
+        "origine": "1"
+      }
+    }
+  ]
+}

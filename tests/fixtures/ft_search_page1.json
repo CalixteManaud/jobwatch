@@ -1,0 +1,68 @@
+{
+  "resultats": [
+    {
+      "id": "200AAAA",
+      "intitule": "Ingénieur DevOps Junior H/F",
+      "description": "Rejoignez notre équipe plateforme ! Poste ouvert aux jeunes diplômés. Vous industrialiserez nos déploiements Kubernetes (k8s) et l'infrastructure AWS avec Terraform, Docker et GitLab CI.",
+      "dateCreation": "2026-11-24T09:12:44.000Z",
+      "dateActualisation": "2026-11-24T09:15:02.000Z",
+      "lieuTravail": {
+        "libelle": "75 - Paris 15e Arrondissement",
+        "latitude": 48.84,
+        "longitude": 2.29,
+        "codePostal": "75015",
+        "commune": "75115"
+      },
+      "romeCode": "M1805",
+      "romeLibelle": "Études et développement informatique",
+      "entreprise": {
+        "nom": "NUAGE CONSEIL",
+        "entrepriseAdaptee": false
+      },
+      "typeContrat": "CDI",
+      "typeContratLibelle": "Contrat à durée indéterminée",
+      "natureContrat": "Contrat travail",
+      "experienceExige": "D",
+      "experienceLibelle": "Débutant accepté",
+      "salaire": {
+        "libelle": "Annuel de 38000.0 Euros à 42000.0 Euros sur 12.0 mois"
+      },
+      "alternance": false,
+      "nombrePostes": 1,
+      "origineOffre": {
+        "origine": "1",
+        "urlOrigine": "https://candidat.francetravail.fr/offres/recherche/detail/200AAAA"
+      }
+    },
+    {
+      "id": "200BBBB",
+      "intitule": "Architecte Cloud Senior (H/F)",
+      "description": "Au moins 5 ans d'expérience en tant que senior sur AWS, Terraform et Kubernetes.",
+      "dateCreation": "2026-11-24T08:00:00.000Z",
+      "lieuTravail": {
+        "libelle": "92 - Courbevoie",
+        "codePostal": "92400"
+      },
+      "entreprise": {
+        "nom": "GRANDE BANQUE"
+      },
+      "typeContrat": "CDI",
+      "experienceExige": "E",
+      "experienceLibelle": "5 An(s)",
+      "salaire": {
+        "libelle": "Annuel de 70000.0 Euros à 80000.0 Euros"
+      },
+      "alternance": false,
+      "origineOffre": {
+        "origine": "2",
+        "urlOrigine": "https://www.example-jobboard.fr/offre/42"
+      }
+    }
+  ],
+  "filtresPossibles": [
+    {
+      "filtre": "typeContrat",
+      "agregation": [{"valeurPossible": "CDI", "nbResultats": 4}]
+    }
+  ]
+}
