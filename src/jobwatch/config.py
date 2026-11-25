@@ -129,10 +129,16 @@ class NotifyConfig(_Strict):
     min_score: int = Field(default=40, ge=0, le=100)
 
 
+class StateConfig(_Strict):
+    # jamais avant la fin de la fenêtre de recherche (garanti par le pipeline)
+    retention_days: int = Field(default=90, ge=1)
+
+
 class AppConfig(_Strict):
     search: SearchConfig
     scoring: ScoringConfig
     notify: NotifyConfig = Field(default_factory=NotifyConfig)
+    state: StateConfig = Field(default_factory=StateConfig)
 
 
 def _format_errors(exc: ValidationError) -> str:

@@ -79,6 +79,7 @@ def test_full_run_then_nothing_new(
         "offers_new": 4,
         "offers_selected": 2,
         "offers_notified": 2,
+        "offers_purged": 0,
         "duration_s": 0,
         "dry_run": False,
         "success": True,

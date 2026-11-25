@@ -35,6 +35,7 @@ def test_summary_keys() -> None:
         "offers_new": 0,
         "offers_selected": 0,
         "offers_notified": 0,
+        "offers_purged": 0,
         "duration_s": 1.235,
         "dry_run": True,
         "success": False,

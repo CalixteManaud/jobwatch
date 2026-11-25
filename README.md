@@ -282,6 +282,9 @@ Hors kind : `kubectl create secret generic jobwatch-secrets --from-env-file=.env
   `jobwatch sample` confronte les modèles à une vraie réponse anonymisée.
 - **SQLite (stdlib)** : un fichier, transactionnel, et plus que suffisant pour quelques milliers
   d'offres. Le JSON brut de chaque offre est conservé pour pouvoir la recalculer plus tard.
+  **Rétention** : les offres vues il y a plus de `state.retention_days` jours (90 par défaut)
+  sont purgées à chaque run, jamais avant la fin de la fenêtre `--since`, pour qu'une offre déjà
+  notifiée ne puisse pas repartir.
 - **Scoring déclaratif** : chaque point est justifié par une raison affichée dans Discord et dans
   le CSV, ce qui permet de régler les poids en connaissant leurs effets.
 - **Codes de sortie explicites** : un job planifié qui échoue doit échouer franchement (CI rouge,

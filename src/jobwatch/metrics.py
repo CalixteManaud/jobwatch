@@ -20,6 +20,7 @@ _GAUGES: tuple[tuple[str, str, str], ...] = (
     ("offers_new", "jobwatch_run_offers_new", "Offres jamais vues auparavant"),
     ("offers_selected", "jobwatch_run_offers_selected", "Offres retenues pour le digest"),
     ("offers_notified", "jobwatch_run_offers_notified", "Offres envoyées sur Discord"),
+    ("offers_purged", "jobwatch_run_offers_purged", "Offres supprimées par la rétention"),
     ("duration_seconds", "jobwatch_run_duration_seconds", "Durée du run en secondes"),
 )
 
@@ -35,6 +36,7 @@ class RunStats:
     offers_new: int = 0
     offers_selected: int = 0
     offers_notified: int = 0
+    offers_purged: int = 0
     duration_seconds: float = 0.0
     success: bool = False
 
@@ -48,6 +50,7 @@ class RunStats:
             "offers_new": self.offers_new,
             "offers_selected": self.offers_selected,
             "offers_notified": self.offers_notified,
+            "offers_purged": self.offers_purged,
             "duration_s": round(self.duration_seconds, 3),
             "dry_run": self.dry_run,
             "success": self.success,

@@ -26,6 +26,11 @@ notify:
   # score minimal (0-100) pour qu'une offre soit envoyée ; surchargeable avec --min-score
   min_score: 40
 
+state:
+  # minimisation des données : les offres vues il y a plus de N jours sont supprimées de la base
+  # (jamais avant la fin de la fenêtre --since, pour qu'une offre notifiée ne puisse pas repartir)
+  retention_days: 90
+
 # Scoring : score = base + bonus + malus, borné entre 0 et 100.
 # Correspondance insensible à la casse et aux accents, sur des mots entiers
 # (pluriel / féminin tolérés : « confirmé » couvre « confirmées »).

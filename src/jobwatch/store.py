@@ -8,7 +8,7 @@ import json
 import sqlite3
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from types import TracebackType
 from typing import Any, Self
@@ -169,7 +169,7 @@ class OfferStore:
         self._ensure_writable()
         rows = list(rows)
         known = self.known_ids(row.id for row in rows)
-        first_seen = seen_at.isoformat(timespec="seconds")
+        first_seen = _timestamp(seen_at)
         with self._conn:
             self._conn.executemany(
                 _UPSERT,
@@ -197,3 +197,19 @@ class OfferStore:
                 )
                 updated += cursor.rowcount
         return updated
+
+    def purge_seen_before(self, cutoff: datetime) -> int:
+        """Supprime les offres vues pour la 1re fois avant `cutoff` (minimisation des données)."""
+        self._ensure_writable()
+        with self._conn:
+            cursor = self._conn.execute(
+                "DELETE FROM offers WHERE first_seen < ?", (_timestamp(cutoff),)
+            )
+        return cursor.rowcount
+
+
+def _timestamp(moment: datetime) -> str:
+    """Horodatage ISO 8601 en UTC, format fixe : les comparaisons de chaînes restent exactes."""
+    if moment.tzinfo is None:
+        raise ValueError("datetime naïf refusé : préciser le fuseau (UTC)")
+    return moment.astimezone(UTC).isoformat(timespec="seconds")

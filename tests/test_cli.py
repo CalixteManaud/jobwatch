@@ -1,17 +1,18 @@
 import json
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import httpx
 import pytest
 import respx
 import typer
+import yaml
 from typer.testing import CliRunner
 
 from jobwatch import __version__
 from jobwatch.cli import app, parse_window
 from jobwatch.francetravail import AUTH_URL, SEARCH_URL
-from jobwatch.store import OfferStore
+from jobwatch.store import OfferRow, OfferStore
 
 from .conftest import load_json
 from .helpers import (
@@ -299,3 +300,31 @@ def test_auth_url_from_environment(
 
     assert result.exit_code == 0, result.output
     assert custom.call_count == 1
+
+
+def test_retention_purges_old_offers_but_never_inside_window(
+    respx_mock: respx.MockRouter, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    paths = setup_env(monkeypatch, tmp_path, DISCORD_WEBHOOK_URL="")
+    config = yaml.safe_load(paths["config"].read_text(encoding="utf-8"))
+    config["state"] = {"retention_days": 1}
+    paths["config"].write_text(yaml.safe_dump(config, allow_unicode=True), encoding="utf-8")
+    now = datetime.now(UTC)
+    with OfferStore.open(paths["state"]) as store:
+        store.upsert_many(
+            [OfferRow("VIEILLE", 50, {"id": "VIEILLE"})], seen_at=now - timedelta(days=10)
+        )
+        store.upsert_many(
+            [OfferRow("RECENTE", 50, {"id": "RECENTE"})], seen_at=now - timedelta(days=3)
+        )
+    mock_france_travail(respx_mock)
+
+    # rétention 1 jour mais fenêtre 7 jours : la rétention effective est de 7 jours
+    result = runner.invoke(app, ["run", "--no-notify", "--since", "7d"])
+
+    assert result.exit_code == 0, result.output
+    assert log_event(result.stderr, "run.summary")["offers_purged"] == 1
+    with OfferStore.open(paths["state"], readonly=True) as store:
+        assert store.get("VIEILLE") is None
+        assert store.get("RECENTE") is not None
+        assert store.count() == 5  # RECENTE + les 4 offres du run

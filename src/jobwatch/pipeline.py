@@ -88,6 +88,7 @@ def run_pipeline(
             (OfferRow(item.offer.id, item.score, item.offer.payload) for item in scored),
             seen_at=now,
         )
+        stats.offers_purged = _purge(store, config, options, now)
 
     threshold = options.min_score if options.min_score is not None else config.notify.min_score
     selected = [
@@ -117,6 +118,20 @@ def run_pipeline(
 
     stats.success = True
     return report
+
+
+def _purge(store: OfferStore, config: AppConfig, options: RunOptions, now: datetime) -> int:
+    """Purge les offres vues il y a plus de `state.retention_days` jours.
+
+    La rétention effective n'est jamais plus courte que la fenêtre de recherche : une offre
+    encore dans la fenêtre (donc vue depuis moins longtemps) reste connue et une offre déjà
+    notifiée ne peut pas repartir.
+    """
+    retention = max(timedelta(days=config.state.retention_days), options.window)
+    purged = store.purge_seen_before(now - retention)
+    if purged:
+        log.info("state.purged", offers=purged, retention_days=retention.days)
+    return purged
 
 
 def _notify(notifier: Notifier, store: OfferStore, digest: Digest, stats: RunStats) -> None:

@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -109,3 +109,31 @@ def test_newer_schema_is_refused(tmp_path: Path) -> None:
         OfferStore.open(path)
     with pytest.raises(ConfigError, match="version 99"):
         OfferStore.open(path, readonly=True)
+
+
+def test_purge_removes_only_offers_seen_before_cutoff() -> None:
+    with OfferStore.in_memory() as store:
+        store.upsert_many([row("OLD1"), row("OLD2")], seen_at=T0 - timedelta(days=100))
+        store.mark_notified(["OLD1"])
+        store.upsert_many([row("RECENT")], seen_at=T0)
+        assert store.purge_seen_before(T0 - timedelta(days=90)) == 2
+        assert store.known_ids(["OLD1", "OLD2", "RECENT"]) == {"RECENT"}
+        assert store.purge_seen_before(T0 - timedelta(days=90)) == 0
+
+
+def test_purge_compares_instants_not_strings() -> None:
+    paris = timezone(timedelta(hours=1))
+    with OfferStore.in_memory() as store:
+        store.upsert_many([row("A")], seen_at=datetime(2026, 1, 1, 0, 30, tzinfo=paris))
+        # 00:30 à Paris = 23:30 UTC la veille : bien antérieur à minuit UTC
+        assert store.purge_seen_before(datetime(2026, 1, 1, 0, 0, tzinfo=UTC)) == 1
+
+
+def test_purge_is_refused_in_readonly(tmp_path: Path) -> None:
+    with OfferStore.open(tmp_path / "x.db", readonly=True) as store, pytest.raises(RuntimeError):
+        store.purge_seen_before(T0)
+
+
+def test_naive_datetime_is_refused() -> None:
+    with OfferStore.in_memory() as store, pytest.raises(ValueError, match="naïf"):
+        store.upsert_many([row("A")], seen_at=datetime(2026, 1, 1))  # noqa: DTZ001

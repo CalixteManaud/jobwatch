@@ -102,3 +102,11 @@ def test_terms_are_cleaned_and_deduplicated(tmp_path: Path) -> None:
     search["keywords"] = ["devops", "  DevOps ", "platform   engineer"]
     config = load_config(_write(tmp_path, data))
     assert config.search.keywords == ["devops", "platform engineer"]
+
+
+def test_state_retention(app_config: AppConfig, tmp_path: Path) -> None:
+    assert app_config.state.retention_days == 90
+    data = _shipped()
+    data["state"] = {"retention_days": 0}
+    with pytest.raises(ConfigError, match=r"state\.retention_days"):
+        load_config(_write(tmp_path, data))
