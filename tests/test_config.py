@@ -11,7 +11,7 @@ from .conftest import ROOT
 
 def _write(tmp_path: Path, data: object) -> Path:
     path = tmp_path / "config.yaml"
-    path.write_text(yaml.safe_dump(data, allow_unicode=True), encoding="utf-8")
+    path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
     return path
 
 

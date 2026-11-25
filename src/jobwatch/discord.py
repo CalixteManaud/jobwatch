@@ -4,7 +4,6 @@ Limites Discord respectées : 10 embeds et 6000 caractères (cumulés) par messa
 limites par champ. L'URL du webhook est un secret : elle n'apparaît dans aucun log ni erreur.
 """
 
-import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -164,8 +163,8 @@ class DiscordNotifier:
         http: httpx.Client | None = None,
         max_attempts: int = 5,
         rate_per_second: float = 2.0,
-        sleep: Callable[[float], None] = time.sleep,
-        clock: Callable[[], float] = time.monotonic,
+        sleep: Callable[[float], None] | None = None,
+        clock: Callable[[], float] | None = None,
     ) -> None:
         self._url = webhook_url
         self._owns_http = http is None

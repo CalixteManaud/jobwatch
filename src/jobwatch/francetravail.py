@@ -216,8 +216,8 @@ class FranceTravailClient:
         page_size: int = PAGE_SIZE,
         rate_per_second: float = DEFAULT_RATE_PER_SECOND,
         max_attempts: int = 5,
-        sleep: Callable[[float], None] = time.sleep,
-        clock: Callable[[], float] = time.monotonic,
+        sleep: Callable[[float], None] | None = None,
+        clock: Callable[[], float] | None = None,
     ) -> None:
         if not 1 <= page_size <= PAGE_SIZE:
             raise ValueError(f"page_size doit être entre 1 et {PAGE_SIZE}")
@@ -237,7 +237,7 @@ class FranceTravailClient:
             client_secret,
             limiter=self._limiter,
             retrying=self._retrying,
-            clock=clock,
+            clock=clock if clock is not None else time.monotonic,
         )
         self._search_requests = 0
 
