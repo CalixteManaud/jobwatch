@@ -1,0 +1,22 @@
+# Run local dans Docker : `make docker-run` (ou `docker compose run --rm jobwatch run --since 7d`).
+# Les secrets viennent de .env ; l'état et les sorties restent sur l'hôte (state/, out/).
+services:
+  jobwatch:
+    build:
+      context: .
+    image: jobwatch:local
+    env_file: .env
+    # même uid/gid que l'utilisateur WSL pour écrire dans les dossiers montés (exportés par le Makefile)
+    user: "${JOBWATCH_UID:-1000}:${JOBWATCH_GID:-1000}"
+    command: ["run", "--since", "26h"]
+    volumes:
+      - ./state:/data/state
+      - ./out:/data/out
+      - ./config.yaml:/app/config.yaml:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

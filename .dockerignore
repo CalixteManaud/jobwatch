@@ -1,0 +1,10 @@
+# Liste blanche : seul ce qui sert au build part dans le contexte (jamais .env ni state/).
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!LICENSE
+!config.yaml
+!src/
+**/__pycache__
+**/*.pyc
