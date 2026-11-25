@@ -11,6 +11,9 @@ import pytest
 import structlog
 
 from jobwatch.config import AppConfig, load_config
+from jobwatch.digest import ScoredOffer
+from jobwatch.models import Offer
+from jobwatch.scoring import Reason, ScoreResult
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -18,6 +21,17 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 def load_json(name: str) -> Any:
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+
+
+def make_scored(
+    offer_id: str = "A",
+    score: int = 60,
+    zone: str = "Paris",
+    reasons: tuple[Reason, ...] = (),
+    **fields: Any,
+) -> ScoredOffer:
+    raw = {"id": offer_id, "intitule": f"Poste {offer_id}", "typeContrat": "CDI", **fields}
+    return ScoredOffer(Offer.from_api(raw), zone, ScoreResult(score, reasons))
 
 
 class FakeTime:

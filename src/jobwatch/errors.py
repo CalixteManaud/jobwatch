@@ -43,6 +43,10 @@ class AllQueriesFailedError(JobwatchError):
 
 
 class NotifyError(JobwatchError):
-    """Le digest n'a pas pu être envoyé sur Discord."""
+    """Le digest n'a pas pu être (entièrement) envoyé sur Discord."""
 
     exit_code = 4
+
+    def __init__(self, message: str, *, sent_ids: list[str] | None = None) -> None:
+        super().__init__(message)
+        self.sent_ids: list[str] = list(sent_ids or [])
