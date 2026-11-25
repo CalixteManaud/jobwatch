@@ -1,0 +1,77 @@
+name: Daily digest
+
+on:
+  schedule:
+    - cron: "30 5 * * *" # UTC : 6h30 à Paris l'hiver, 7h30 l'été
+  workflow_dispatch:
+    inputs:
+      since:
+        description: "Fenêtre de recherche (26h, 7d...) ; 7d conseillé pour le premier run"
+        required: true
+        default: "26h"
+        type: string
+
+permissions:
+  contents: read
+
+# jamais deux runs en parallèle : ils se disputeraient l'état SQLite
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      STATE_PATH: state/jobwatch.db
+      OUT_DIR: out
+      LOG_FORMAT: json
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          version: "0.13.10"
+          enable-cache: true
+
+      - name: Installer jobwatch
+        run: uv sync --frozen --no-dev
+
+      # clé unique par run + restore-keys sur le préfixe : on repart toujours du dernier état
+      - name: Restaurer l'état SQLite
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: state
+          key: jobwatch-state-${{ github.run_id }}
+          restore-keys: |
+            jobwatch-state-
+
+      - name: jobwatch run
+        env:
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
+          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          PUSHGATEWAY_URL: ${{ vars.PUSHGATEWAY_URL }}
+          # passé par l'environnement (jamais interpolé dans le script) : pas d'injection
+          SINCE: ${{ inputs.since || '26h' }}
+        run: uv run --no-dev jobwatch run --since "$SINCE"
+
+      # même en cas d'échec Discord : les offres déjà envoyées sont marquées et ne doivent pas repartir
+      - name: Sauvegarder l'état SQLite
+        if: always() && hashFiles('state/jobwatch.db') != ''
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: state
+          key: jobwatch-state-${{ github.run_id }}
+
+      - name: Publier le CSV et le digest
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: jobwatch-${{ github.run_id }}
+          path: out/
+          if-no-files-found: warn
+          retention-days: 30
