@@ -1,0 +1,67 @@
+# Configuration fonctionnelle de jobwatch : modifiable sans toucher au code.
+# Les secrets n'ont rien à faire ici : ils passent par l'environnement (.env / GitHub Secrets / Secret k8s).
+
+search:
+  contract_type: CDI
+  # code département → libellé de la zone (sert aussi au groupage du digest)
+  departments:
+    "59": Lille
+    "75": Paris
+    "92": Paris
+    "69": Lyon
+    "13": Aix-Marseille
+  # une requête par couple (mot-clé, département), dédoublonnage global par id
+  keywords:
+    - devops
+    - sre
+    - cloud
+    - kubernetes
+    - ingénieur de production
+    - ingénieur d'exploitation
+    - administrateur système
+    - ingénieur système linux
+    - platform engineer
+
+notify:
+  # score minimal (0-100) pour qu'une offre soit envoyée ; surchargeable avec --min-score
+  min_score: 40
+
+# Scoring : score = base + bonus + malus, borné entre 0 et 100.
+# Correspondance insensible à la casse et aux accents, sur des mots entiers
+# (pluriel / féminin tolérés : « confirmé » couvre « confirmées »).
+scoring:
+  base: 40
+
+  experience:            # champ experienceExige de l'offre
+    debutant: 20         # D : débutant accepté
+    souhaitee: 0         # S : expérience souhaitée
+    exigee: -10          # E : expérience exigée
+    exigee_longue: -25   # E avec au moins `annees_longue` ans dans experienceLibelle
+    annees_longue: 3
+
+  junior:                # bonus unique si au moins un mot est trouvé (titre ou description)
+    weight: 15
+    keywords: [junior, débutant, jeune diplômé, première expérience]
+
+  stack:                 # bonus par techno de ma stack trouvée, plafonné
+    per_tech: 4
+    max: 24
+    techs: [terraform, kubernetes, rancher, helm, gitlab, argocd, aws, docker,
+            ansible, prometheus, grafana, linux, python, jenkins, vault]
+    aliases:             # synonymes comptés comme la même techno
+      kubernetes: [k8s]
+      argocd: [argo cd, argo-cd]
+
+  seniority:
+    title_weight: -25    # si un mot est dans le titre
+    keywords: [senior, lead, architecte, expert, confirmé, manager, 5 ans, 7 ans, 10 ans]
+    description_weight: -8
+    # dans la description, on garde les signaux peu ambigus
+    # (« lead », « manager », « expert » y sont trop fréquents dans des offres juniors)
+    description_keywords: [senior, confirmé, 5 ans, 7 ans, 10 ans]
+
+  exclusions:            # offre écartée (jamais envoyée), quel que soit son score
+    keywords: [alternance, stage, freelance, portage, intérim]
+    # false : seulement le titre (+ champ alternance) ; true : aussi la description (faux positifs
+    # fréquents du type « pas de freelance »)
+    check_description: false
