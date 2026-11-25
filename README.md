@@ -7,24 +7,24 @@
 | src/jobwatch/\_\_init\_\_.py  |        4 |        0 |        0 |        0 |    100% |           |
 | src/jobwatch/\_\_main\_\_.py  |        1 |        1 |        0 |        0 |      0% |         3 |
 | src/jobwatch/anonymize.py     |       51 |        1 |       26 |        1 |     97% |        54 |
-| src/jobwatch/cli.py           |      169 |        3 |       22 |        1 |     98% |247-\>249, 291-293 |
+| src/jobwatch/cli.py           |      170 |        3 |       22 |        1 |     98% |251-\>253, 294-296 |
 | src/jobwatch/collect.py       |       46 |        0 |        4 |        0 |    100% |           |
-| src/jobwatch/config.py        |       96 |        1 |       18 |        1 |     98% |        59 |
+| src/jobwatch/config.py        |       99 |        1 |       18 |        1 |     98% |        59 |
 | src/jobwatch/digest.py        |       52 |        0 |        4 |        0 |    100% |           |
 | src/jobwatch/discord.py       |      121 |        0 |       30 |        2 |     99% |107-\>109, 178-\>exit |
 | src/jobwatch/errors.py        |       15 |        0 |        0 |        0 |    100% |           |
 | src/jobwatch/exporters.py     |       59 |        0 |       12 |        0 |    100% |           |
-| src/jobwatch/francetravail.py |      219 |        2 |       58 |        3 |     98% |   86, 334 |
+| src/jobwatch/francetravail.py |      220 |        2 |       58 |        3 |     98% |   88, 340 |
 | src/jobwatch/log.py           |       31 |        0 |       10 |        0 |    100% |           |
-| src/jobwatch/metrics.py       |       50 |        0 |        6 |        1 |     98% | 103-\>105 |
+| src/jobwatch/metrics.py       |       51 |        0 |        6 |        1 |     98% | 106-\>108 |
 | src/jobwatch/models.py        |       79 |        1 |        6 |        1 |     98% |        40 |
-| src/jobwatch/pipeline.py      |       62 |        0 |        4 |        0 |    100% |           |
+| src/jobwatch/pipeline.py      |       69 |        0 |        6 |        0 |    100% |           |
 | src/jobwatch/ratelimit.py     |       19 |        0 |        4 |        0 |    100% |           |
 | src/jobwatch/retry.py         |       53 |        0 |        6 |        1 |     98% |   73-\>77 |
 | src/jobwatch/scoring.py       |      110 |        0 |       28 |        0 |    100% |           |
-| src/jobwatch/settings.py      |       39 |        0 |        8 |        0 |    100% |           |
-| src/jobwatch/store.py         |      101 |        0 |       18 |        0 |    100% |           |
-| **TOTAL**                     | **1377** |    **9** |  **264** |   **11** | **99%** |           |
+| src/jobwatch/settings.py      |       53 |        0 |       12 |        0 |    100% |           |
+| src/jobwatch/store.py         |      110 |        0 |       20 |        0 |    100% |           |
+| **TOTAL**                     | **1413** |    **9** |  **272** |   **11** | **99%** |           |
 
 
 ## Setup coverage badge
